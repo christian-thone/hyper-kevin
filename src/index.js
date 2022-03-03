@@ -1,11 +1,10 @@
-'use strict';
-
 require('dotenv/config');
 
 // const path = require('path');
 const fs = require('node:fs'); // File System
 
 let rawConfigData = fs.readFileSync('./src/data/config.json');
+console.log('File Read..');
 let config = JSON.parse(rawConfigData);
 
 // Class Imports
@@ -13,11 +12,11 @@ let config = JSON.parse(rawConfigData);
 
 const commandsDirectory = './src/commands';
 
-const client = require('./src/classes/Client');
-const Command = require('./src/classes/Command.js');
+const client = require('../src/classes/Client');
+const Command = require('../src/classes/Command');
 
 
-client.on('ready', () => {
+client.once('ready', () => {
 	console.log('The bot is ready.');
 
 	fs.readdir(commandsDirectory, (error, files) => {
@@ -35,11 +34,16 @@ client.on('ready', () => {
 	});
 });
 
-client.on('messageCreate', (message) => {
+client.once('messageCreate', (message) => {
 
 	if (!message.content.startsWith(config.prefix)) {return;}
 
 	const commandArguments = message.content.substring(config.prefix.length).split(/ +/);
+
+	const command = client.commands.find((cmd) => cmd.name == commandArguments[0]);
+	if (!command) {return;}
+
+	command.run(message, commandArguments, client);
 
 });
 
